@@ -1,0 +1,5 @@
+indexdir/
+test/
+*.pdf
+*.txt
+*.log
