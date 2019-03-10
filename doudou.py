@@ -15,8 +15,8 @@ index_dir = 'indexdir'
 page_len = 15
 port = 19986
 
-#srch_root = '/home/tk/master-tree/incr'
-srch_root = './test'
+srch_root = '/home/tk/master-tree/incr'
+#srch_root = './test'
 
 reset_index = False
 
@@ -29,7 +29,6 @@ schema = Schema(
 
 def files_under(root):
 	for dirpath, dirnames, filenames in os.walk(root):
-		print(filenames)
 		for f_name in filenames:
 			yield os.path.join(dirpath, f_name)
 
@@ -47,8 +46,21 @@ def get_index():
 
 def index_txt_file(writer, path):
 	mtime = os.path.getmtime(path)
-	with open(path, encoding='utf-8') as fh:
-		content = fh.read()
+	with open(path, 'rb') as fh:
+		binary = fh.read()
+		possible_enc = ['utf-8', 'gb2312']
+		content = ''
+		for guess in possible_enc:
+			is_right = True
+			try:
+				content = binary.decode(guess)
+			except:
+				is_right = False
+			if is_right:
+				break
+			elif guess == possible_enc[-1]:
+				print('Cannot decode', path)
+				return
 		writer.add_document(
 			fileid=path,
 			filepath=path,
@@ -91,7 +103,6 @@ def incremental_index():
 	with ix.searcher() as se:
 		for fields in se.all_stored_fields():
 			path = fields['filepath']
-			print(path)
 			if not os.path.exists(path):
 				writer.delete_by_term('fileid', path)
 				print('[deletion detected]', path)
@@ -106,8 +117,15 @@ def incremental_index():
 					indexed_paths.add(path)
 	# re-index everyfile that is "new" to whoosh
 	for path in files_under(srch_root):
+		try:
+			os.stat(path)
+		except:
+			print('[err open]', path)
+			continue
 		if path not in indexed_paths:
-			ext = path.split('.')[-1]
+			ext = path.split('.')[-1].lower()
+			if ext in ['c', 'cpp', 'dll', 'info', 'h', 'sys', 'bin', 'hex']:
+				continue
 			print('[indexing %s] %s' % (ext, path))
 			if ext == 'pdf':
 				index_pdf_file(writer, path)
