@@ -59,8 +59,9 @@ def index_txt_file(writer, path):
 			if is_right:
 				break
 			elif guess == possible_enc[-1]:
-				print('Cannot decode', path)
-				return
+				print('[err decode]', path)
+				content = ''
+				break
 		writer.add_document(
 			fileid=path,
 			filepath=path,
@@ -78,11 +79,15 @@ def index_file_name(writer, path):
 	)
 
 def index_pdf_file(writer, path):
-	out = open('tmp.txt', 'w', encoding='utf-8')
-	params = pdfminer.layout.LAParams()
-	with open(path, 'rb') as fh:
-		pdfminer.high_level.extract_text_to_fp(fh, out, laparams=params)
-	out.close()
+	with open('tmp.txt', 'w', encoding='utf-8') as out:
+		with open(path, 'rb') as fh:
+			try:
+				params = pdfminer.layout.LAParams()
+				pdfminer.high_level.extract_text_to_fp(fh, out, laparams=params)
+			except:
+				print('[err extract pdf]', path)
+				content = ''
+				pass
 	# now index the text output
 	mtime = os.path.getmtime(path)
 	with open('./tmp.txt', encoding='utf-8') as fh:
