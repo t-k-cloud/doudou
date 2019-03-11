@@ -1,5 +1,8 @@
 indexdir/
-test/
+node_modules/
+test-docs/
+dist/
+yarn.lock
 *.pdf
 *.txt
 *.log
