@@ -128,6 +128,14 @@ def incremental_index():
 			print('[err open]', path)
 			continue
 		if path not in indexed_paths:
+			if "/node_modules/" in path:
+				continue
+			elif ".git" in path:
+				continue
+			elif "/src/" in path:
+				continue
+			elif "/obj/" in path:
+				continue
 			ext = path.split('.')[-1].lower()
 			if ext in ['c', 'cpp', 'dll', 'info', 'h', 'sys', 'bin', 'hex']:
 				continue
@@ -139,6 +147,7 @@ def incremental_index():
 			else:
 				index_file_name(writer, path)
 	writer.commit()
+	time.sleep(0.1)
 
 def indexing_forever():
 	while True:
