@@ -157,8 +157,8 @@ def search(query, page):
 			maxchars=200, surround=100, charlimit=100000
 		)
 		p.results.fragmenter = fg
-		res['cur_page'] = p.results.pagenum
-		res['tot_page'] = p.results.pagecount
+		res['cur_page'] = p.pagenum
+		res['tot_page'] = p.pagecount
 		res['list'] = list()
 		for hit in p:
 			t = time.localtime(hit['moditime'])
@@ -190,17 +190,18 @@ class doudouHandler(BaseHTTPRequestHandler):
 		self.end_headers()
 		self.wfile.write(response.encode('utf-8'))
 
-# try:
-# 	print("Runing indexd in background ...")
-# 	indexd = Process(target=indexing_forever)
-# 	indexd.start()
-# 	print("Listening on port " + str(port))
-# 	server = HTTPServer(('', port), doudouHandler)
-# 	server.serve_forever()
-# except KeyboardInterrupt:
-# 	print('\n\n')
-# 	print('Close the server...')
-# 	indexd.terminate()
-# 	server.socket.close()
+try:
+	print("Runing indexd in background ...")
+	indexd = Process(target=indexing_forever)
+	indexd.start()
+	print("Listening on port " + str(port))
+	server = HTTPServer(('', port), doudouHandler)
+	server.serve_forever()
+except KeyboardInterrupt:
+	print('\n\n')
+	print('Close the server...')
+	indexd.terminate()
+	server.socket.close()
 
-indexing_forever()
+#indexing_forever()
+#print(search('VAE', 1))
