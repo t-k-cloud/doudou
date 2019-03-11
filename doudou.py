@@ -191,34 +191,40 @@ class doudouHandler(BaseHTTPRequestHandler):
 		self.end_headers()
 		self.wfile.write(response.encode('utf-8'))
 
-def daemon():
+def indexd():
 	try:
 		print("Runing indexd in background ...")
 		indexd = Process(target=indexing_forever)
 		indexd.start()
+	except KeyboardInterrupt:
+		indexd.terminate()
+
+def searchd():
+	try:
 		print("Listening on port " + str(port))
 		server = HTTPServer(('', port), doudouHandler)
 		server.serve_forever()
 	except KeyboardInterrupt:
 		print('\n\n')
 		print('Close the server...')
-		indexd.terminate()
 		server.socket.close()
 
 # main #
 parser = argparse.ArgumentParser(description='Doudou, a loyal searcher.')
 parser.add_argument('--reset', help='clear previous index.', action="store_true")
-parser.add_argument('--daemon', help='start Doudou daemon.', action="store_true")
-parser.add_argument('--indexing', help='start indexer.', action="store_true")
+parser.add_argument('--searchd', help='start Doudou daemon.', action="store_true")
+parser.add_argument('--indexd', help='start index daemon.', action="store_true")
 parser.add_argument('--query', help='query a string.', type=str)
 args = parser.parse_args()
 
 if args.reset:
 	reset_index()
 
-if args.daemon:
-	daemon()
-elif args.indexing:
-	indexing_forever()
-elif args.query:
+if args.indexd:
+	indexd()
+
+if args.searchd:
+	searchd()
+
+if args.query:
 	print(search(args.query, 1))
