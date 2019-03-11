@@ -67,12 +67,11 @@ export default {
   },
   methods: {
     on_search(page) {
-      if (page == 0) return
       const qry = this.qry
       var vm = this
       this.fired = true
       this.firing = true
-      axios.get('/query', {
+      axios.get('query', {
           params: {
           'q': qry, 'p': page
         }
@@ -95,7 +94,7 @@ export default {
       "firing": false,
       "fired": false,
       "qry": "",
-      "cur_page": 0,
+      "cur_page": 1,
       "tot_page": 0,
       "list": []
     }
