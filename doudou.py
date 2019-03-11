@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os, os.path, time, json
 from whoosh import index
 from whoosh import highlight
@@ -6,6 +7,7 @@ from whoosh.qparser import MultifieldParser
 from jieba.analyse import ChineseAnalyzer
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from multiprocessing import Process
+import argparse
 
 import pdfminer.settings
 pdfminer.settings.STRICT = False
@@ -17,8 +19,6 @@ port = 19986
 
 srch_root = '/home/tk/master-tree/incr'
 #srch_root = './test'
-
-reset_index = False
 
 schema = Schema(
 	fileid=ID(unique=True),
@@ -33,16 +33,15 @@ def files_under(root):
 			yield os.path.join(dirpath, f_name)
 
 def get_index():
-	global reset_index
 	if not os.path.exists(index_dir):
 		os.mkdir(index_dir)
-		reset_index = False
-		return index.create_in(index_dir, schema)
-	if reset_index:
-		reset_index = False
 		return index.create_in(index_dir, schema)
 	else:
 		return index.open_dir(index_dir)
+
+def reset_index():
+	print('reset index!')
+	index.create_in(index_dir, schema)
 
 def index_txt_file(writer, path):
 	mtime = os.path.getmtime(path)
@@ -100,7 +99,6 @@ def index_pdf_file(writer, path):
 		)
 
 def incremental_index():
-	global srch_root
 	ix = get_index()
 	writer = ix.writer()
 	indexed_paths = set()
@@ -181,14 +179,8 @@ def search(query, page):
 	return res
 
 def doudouHandleReq(req):
-	global reset_index
 	print(req)
-	if req['type'] == 'reset':
-		print('Reset index in the next cycle.')
-		reset_index = True
-		return
-	elif req['type'] == 'search':
-		return json.dumps(search(req['q'], req['p']))
+	return json.dumps(search(req['q'], req['p']))
 
 class doudouHandler(BaseHTTPRequestHandler):
 	def do_POST(self):
@@ -199,18 +191,34 @@ class doudouHandler(BaseHTTPRequestHandler):
 		self.end_headers()
 		self.wfile.write(response.encode('utf-8'))
 
-try:
-	print("Runing indexd in background ...")
-	indexd = Process(target=indexing_forever)
-	indexd.start()
-	print("Listening on port " + str(port))
-	server = HTTPServer(('', port), doudouHandler)
-	server.serve_forever()
-except KeyboardInterrupt:
-	print('\n\n')
-	print('Close the server...')
-	indexd.terminate()
-	server.socket.close()
+def daemon():
+	try:
+		print("Runing indexd in background ...")
+		indexd = Process(target=indexing_forever)
+		indexd.start()
+		print("Listening on port " + str(port))
+		server = HTTPServer(('', port), doudouHandler)
+		server.serve_forever()
+	except KeyboardInterrupt:
+		print('\n\n')
+		print('Close the server...')
+		indexd.terminate()
+		server.socket.close()
 
-#indexing_forever()
-#print(search('VAE', 1))
+# main #
+parser = argparse.ArgumentParser(description='Doudou, a loyal searcher.')
+parser.add_argument('--reset', help='clear previous index.', action="store_true")
+parser.add_argument('--daemon', help='start Doudou daemon.', action="store_true")
+parser.add_argument('--indexing', help='start indexer.', action="store_true")
+parser.add_argument('--query', help='query a string.', type=str)
+args = parser.parse_args()
+
+if args.reset:
+	reset_index()
+
+if args.daemon:
+	daemon()
+elif args.indexing:
+	indexing_forever()
+elif args.query:
+	print(search(args.query, 1))
