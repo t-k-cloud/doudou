@@ -62,7 +62,8 @@ export default {
       this.cur_page = newPage
       this.tot_page = 0
       this.list = []
-      this.on_search(newPage)
+      if (newPage > 0)
+        this.on_search(newPage)
     }
   },
   methods: {

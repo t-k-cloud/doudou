@@ -1,4 +1,5 @@
 indexdir/
+indexdir
 node_modules/
 test-docs/
 dist/
