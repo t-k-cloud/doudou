@@ -8,6 +8,18 @@
   <v-btn color="warning" @click="on_search(1)">search</v-btn>
 </v-toolbar>
 
+<div>
+<v-alert :value="tot_page < 0" type="error">
+  Opps, something goes wrong...
+</v-alert>
+<v-alert :value="tot_page == 0 && !firing && fired" type="warning">
+  No search result.
+</v-alert>
+<v-alert :value="firing" type="info">
+  Searching...
+</v-alert>
+</div>
+
 <div class="hit" v-for="j in list">
 <v-card>
   <v-card-title>
@@ -23,18 +35,6 @@
     </span>
   </v-card-actions>
 </v-card>
-</div>
-
-<div>
-<v-alert :value="tot_page < 0" type="error">
-  Opps, something goes wrong...
-</v-alert>
-<v-alert :value="tot_page == 0 && !firing && fired" type="warning">
-  No search result.
-</v-alert>
-<v-alert :value="firing" type="info">
-  Searching...
-</v-alert>
 </div>
 
 <div class="text-xs-center hit" v-if="tot_page > 0">
