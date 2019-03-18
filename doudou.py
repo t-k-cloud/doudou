@@ -16,6 +16,7 @@ import pdfminer.high_level
 index_dir = 'indexdir'
 page_len = 15
 port = 19986
+sleep_secs = 60 * 10
 
 srch_root = '/home/tk/master-tree/incr'
 #srch_root = './test'
@@ -145,12 +146,13 @@ def incremental_index():
 			else:
 				index_file_name(writer, path)
 	writer.commit()
-	time.sleep(0.1)
 
 def indexing_forever():
 	while True:
 		incremental_index()
-		time.sleep(1)
+		for t in range(sleep_secs, 1, -1):
+			print('indexing in %s secs\r' % t, end='')
+			time.sleep(1)
 
 def search(query, page):
 	ix = index.open_dir(index_dir)

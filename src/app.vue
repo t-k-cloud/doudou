@@ -64,6 +64,10 @@ export default {
       this.list = []
       if (newPage > 0)
         this.on_search(newPage)
+      { /* scroll to top */
+        document.body.scrollTop = 0; // For Safari
+        document.documentElement.scrollTop = 0;
+      }
     }
   },
   methods: {
