@@ -5,5 +5,5 @@ test-docs/
 dist/
 yarn.lock
 *.pdf
-*.txt
+tmp.txt
 *.log
