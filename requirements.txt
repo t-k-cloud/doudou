@@ -1,1 +1,3 @@
+jieba
+whoosh
 pdfminer.six==20200124
